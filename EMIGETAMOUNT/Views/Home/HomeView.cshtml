@@ -1,0 +1,169 @@
+﻿@model EMIGETAMOUNT.Models.EMIorEWIDO
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Insert title here</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+</head>
+<body>
+        Repayment:
+        <select id="repayment" class="form-control" style="width:10%">
+            <option>select</option> 
+            <option>Monthly</option>
+            <option>Weekly</option>
+        </select><br /><br />
+        LoanAmount:
+        <input type="text" id="loanamount" placeholder="LoanAmount" onkeypress="return allowOneDot(event);"  required><br/><br />
+        AnnualInterest Rate(%):
+        <input type="text" id="annualinterest" placeholder="Annual Interest" onkeypress="return allowOneDot_1(event);"  required><br/><br />
+        No.Of.Payment:
+        <input type="text" id="noofpayment" placeholder="No.Of.Payment" onkeypress="return allowOneDot_3(event);"  required><br/><br />
+    
+    <input type="submit" id="calculate" name="Calculate" value="Calculate" class="btn btn-success">
+        <hr>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>S.NO.</th>
+                    <th>Interest</th>
+                    <th>Principal</th>
+                    <th>EMI</th>
+                    <th>Balance</th>                    
+                </tr>
+            </thead>
+            <tbody id="abcd"></tbody>
+        </table>
+        <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {                                             
+                $("#calculate").click(function () { 
+                    $("#abcd").empty();
+                    var tr = null;                   
+                    if ($("#repayment").val() === "select") {
+                        alert("Please Select Repayment Mode");
+                    } else if ($("#loanamount").val()===""){
+                        alert("Please Enter Loan Amount");
+                    } else if ($("#annualinterest").val() === "") {
+                        alert("Please Enter Loan Annual Interest");
+                    } else if ($("#noofpayment").val() === "") {
+                        alert("Please Enter Number of Payment");
+                    } else {                      
+
+                        jQuery.ajax({
+                                url: "@(Url.Action("GetData", "Home"))",
+                                type: 'POST',
+                                data: ({
+                                    RepaymentMode: $("#repayment").val(),
+                                    LoanAmount: $("#loanamount").val(),
+                                    AnnualInterest: $("#annualinterest").val(),
+                                    NoofPayment: $("#noofpayment").val() }),
+                                    success: function (response) {
+                                        for (var i = 0; i < response.length; i++) {
+                                            tr = '<tr><td>' + response[i].snoDO + '</td><td>' + response[i].interestDO + '</td> <td>' + response[i].principalDD + '</td> <td>' + response[i].emiDO + '</td> <td>' + response[i].balanceDO + '</td> </tr>';
+                                            $("tbody").append(tr);
+                                        }
+                                }
+                            });
+                           // $.post("/Home/GetData",
+                           // {
+                           //     RepaymentMode: $("#repayment").val(),
+                           //     LoanAmount: $("#loanamount").val(),
+                           //     AnnualInterest: $("#annualinterest").val(),
+                           //     NoofPayment: $("#noofpayment").val()
+                           // },
+                           //     function (response) {                                   
+                           //         for (var i = 0; i < response.length; i++) {
+                           //             tr = '<tr><td>' + response[i].snoDO + '</td><td>' + response[i].interestDO + '</td> <td>' + response[i].principalDD + '</td> <td>' + response[i].emiDO + '</td> <td>' + response[i].balanceDO + '</td> </tr>';
+                           //             $("tbody").append(tr);
+                           //         }
+                           //     }
+                           //);
+                    }                                  
+                }); 
+                
+            }); 
+                var txt = document.getElementById('loanamount');                                     
+                var prevValue = txt.value;
+                function allowOneDot(e) {
+                    var dots = 0;
+                    var length = txt.value.length;
+                    var text = txt.value;
+                    var keyCode = e.keyCode || e.which;
+                    var regex = /^[0-9,.]+$/;
+                    var isValidMobile = regex.test(String.fromCharCode(keyCode));
+                    if (isValidMobile) {                       
+                        for (var i = 0; i < length; i++) {
+                            if (text[i] == '.') dots++;
+                            if (dots > 1) {
+                                txt.value = prevValue;                                
+                                return false;                                
+                            }
+                        }
+                        prevValue = text;
+                        return true;
+                    }
+                    return isValidMobile;                         
+                }
+                txt.onkeypress = allowOneDot;
+
+
+            var txt1 = document.getElementById('annualinterest');
+            var prevValue1 = txt1.value;
+            function allowOneDot_1(e) {
+                var dots = 0;
+                var length = txt1.value.length;
+                var text = txt1.value;
+                var keyCode = e.keyCode || e.which;
+                var regex = /^[0-9,.]+$/;
+                var isValidMobile = regex.test(String.fromCharCode(keyCode));
+                if (isValidMobile) {
+                    for (var i = 0; i < length; i++) {
+                        if (text[i] == '.') dots++;
+                        if (dots > 1) {
+                            txt1.value = prevValue1;
+                            return false;
+                        }
+                    }
+                    prevValue1 = text;
+                    return true;
+                }
+                return isValidMobile;
+            }
+            txt1.onkeypress = allowOneDot_1;
+
+
+            var txt3 = document.getElementById('noofpayment');
+            var prevValue3 = txt3.value;
+            function allowOneDot_3(e) {
+                var dots = 0;
+                var length = txt3.value.length;
+                var text = txt3.value;
+                var keyCode = e.keyCode || e.which;
+                var regex = /^[0-9,.]+$/;
+                var isValidMobile = regex.test(String.fromCharCode(keyCode));
+                if (isValidMobile) {
+                    for (var i = 0; i < length; i++) {
+                        if (text[i] == '.') dots++;
+                        if (dots > 1) {
+                            txt3.value = prevValue3;
+                            return false;
+                        }
+                    }
+                    prevValue3 = text;
+                    return true;
+                }
+                return isValidMobile;
+            }
+            txt3.onkeypress = allowOneDot_3;
+            
+        </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+
+
+CREATE Procedure EMISchedule(@amount money,@emi money ,@rateOfInterest decimal(18,2),@RepaymentMode varchar(2),@soddate date)    
+AS    
+BEGIN     
+declare     
+@daysinyear int= 365,@Intrest decimal(18,2),    
+@SNO Int,@principal money,@TRANSDATE date    
+set @SNO=0    
+ IF (SELECT OBJECT_ID('TEMPDB..#temptable')) IS NOT NULL                                                                                                                      
+        DROP TABLE #temptable      
+ create table #temptable (SNO int,BalancePrincipalAmount money,EMI money,Principal money,Intrest money,TransactionDate date)    
+while(0<@amount)    
+Begin    
+ if(@RepaymentMode='W')    
+ Begin    
+  if (@amount>=@emi)    
+  Begin    
+   SET @Intrest = ((@amount * (@rateOfInterest / 100.00 /@daysinyear)) * 7);    
+   set @principal =@emi-@intrest     
+   set @amount =@amount -  @principal    
+   set @SNO=@SNO+1    
+   SET @TRANSDATE= DATEADD(DAY,7,@soddate)    
+   set @soddate=@TRANSDATE    
+   insert into #temptable(SNO,BalancePrincipalAmount,EMI,Principal,Intrest,TransactionDate)values(@SNO,@amount,@emi,@principal,@Intrest,@TRANSDATE)    
+  End    
+  Else    
+  Begin    
+   SET @Intrest = ((@amount * (@rateOfInterest / 100.00 /@daysinyear)) * 7);    
+   set @emi=@amount+@Intrest    
+   set @principal =@emi-@intrest     
+   set @amount =@amount -  @principal    
+   SET @TRANSDATE= DATEADD(DAY,7,@soddate)    
+   set @soddate=@TRANSDATE    
+   insert into #temptable(SNO,BalancePrincipalAmount,EMI,Principal,Intrest,TransactionDate)values(@SNO+1,@amount,@emi,@principal,@Intrest,@TRANSDATE)    
+  End    
+ END    
+ if(@RepaymentMode='M')    
+ Begin    
+  if (@amount>=@emi)    
+  Begin    
+   SET @Intrest = ((@amount * (@rateOfInterest / 100.00 /@daysinyear)) * 30);    
+   set @principal =@emi-@intrest     
+   set @amount =@amount-@principal    
+   set @SNO=@SNO+1    
+   SET @TRANSDATE= DATEADD(MONTH,1,@soddate)    
+   set @soddate=@TRANSDATE    
+   insert into #temptable(SNO,BalancePrincipalAmount,EMI,Principal,Intrest,TransactionDate)values(@SNO,@amount,@emi,@principal,@Intrest,@TRANSDATE)    
+  End    
+  Else    
+  Begin    
+   SET @Intrest = ((@amount * (@rateOfInterest / 100.00 /@daysinyear)) * 30);    
+   set @emi=@amount+@Intrest    
+   set @principal =@emi-@intrest     
+   set @amount =@amount -  @principal    
+   SET @TRANSDATE= DATEADD(MONTH,1,@soddate)    
+   set @soddate=@TRANSDATE    
+   insert into #temptable(SNO,BalancePrincipalAmount,EMI,Principal,Intrest,TransactionDate)values(@SNO+1,@amount,@emi,@principal,@Intrest,@TRANSDATE)    
+  End    
+ END    
+END    
+select * from #temptable    
+END
